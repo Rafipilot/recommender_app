@@ -15,6 +15,8 @@ from arch_recommender import arch
 # Initialize global variables
 if "videos_in_list" not in st.session_state:
     st.session_state.videos_in_list = []
+if "recommendation_result" not in st.session_state:
+    st.session_state.recommendation_result = []
 
 display_video = False
 
@@ -56,16 +58,6 @@ st.set_page_config(page_title="DemoRS", layout="wide")
 
 # Predefined list of random search terms
 random_search_terms = ['funny', 'gaming', 'science', 'technology', 'news', 'random', 'adventure', "programming", "computer science"]
-
-def train_agent(input, user_response):  # function to train the agent
-    if user_response == "pleasure":
-        Cpos = True 
-        Cneg = False
-    elif user_response == "pain":
-        Cneg = True
-        Cpos = False
-    
-    st.session_state.agent.next_state(INPUT=input, Cpos=Cpos, Cneg=Cneg, print_result=False)
 
 
 def get_random_youtube_link():
@@ -111,14 +103,37 @@ def embedding_bucketing_response(uncategorized_input, max_distance, bucket_list,
     return closest_bucket, bucket_binary # returning the closest bucket and its binary encoding
 
 
-def next_video():
+def next_video():  # function return closest genre and binary encoding of next video and displays it 
     display_video = False
     title = get_title_from_url(st.session_state.videos_in_list[0])
     closest_genre, genre_binary_encoding = embedding_bucketing_response(title, max_distance, genre_buckets, type_of_distance_calc, amount_of_binary_digits)
     print("Closest genre to title", title, "is", closest_genre)
     st.write("Genre:", closest_genre)
+    st.session_state.recommendation_result = agent_response()
+    st.write("Recommendation result: ", st.session_state.recommendation_result)
     st.video(st.session_state.videos_in_list[0])
     return closest_genre, genre_binary_encoding
+
+def train_agent(user_response):
+    input = get_agent_input()
+    if user_response == "pleasure":
+        Cpos = True 
+        Cneg = False
+    elif user_response == "pain":
+        Cneg = True
+        Cpos = False
+    st.session_state.agent.next_state(INPUT=input, Cpos=Cpos, Cneg=Cneg, print_result=False)
+
+def get_agent_input():
+    title = get_title_from_url(st.session_state.videos_in_list[0])
+    closest_genre, genre_binary_encoding = embedding_bucketing_response(title, max_distance, genre_buckets, type_of_distance_calc, amount_of_binary_digits)
+    return genre_binary_encoding
+
+def agent_response(): # function to get agent response on next video
+    input = get_agent_input()
+    st.session_state.agent.next_state( INPUT=input, print_result=False)
+    response = st.session_state.agent.story[st.session_state.agent.state-1, st.session_state.agent.arch.Z__flat]
+    return response
 
 # Title of the app
 st.title("Recommender")
@@ -141,7 +156,8 @@ if st.button("Start"):
 small_right, small_left = st.columns(2)
 
 with small_right:
-    if st.button("Pleasure"):
+    if st.button("Pleasure"):#
+        train_agent(user_response="pleasure")
         if len(st.session_state.videos_in_list) > 0:
             st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
             display_video = True
@@ -150,6 +166,7 @@ with small_right:
 
 with small_left:
     if st.button("Pain"):
+        train_agent(user_response="pain")
         if len(st.session_state.videos_in_list) > 0:
             st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
             display_video = True
