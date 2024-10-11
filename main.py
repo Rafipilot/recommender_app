@@ -27,27 +27,7 @@ if "agent" not in st.session_state:
 max_distance = 20 # setting it high for no auto bucketing
 amount_of_binary_digits = 10
 type_of_distance_calc = "COSINE SIMILARITY"
-start_Genre = genres = [
-    "Drama", 
-    "Comedy", 
-    "Action", 
-    "Romance", 
-    "Documentary", 
-    "Music", 
-    "Gaming", 
-    "Entertainment", 
-    "News", 
-    "Thriller", 
-    "Horror", 
-    "Science Fiction", 
-    "Fantasy", 
-    "Adventure", 
-    "Mystery", 
-    "Animation", 
-    "Family", 
-    "Historical", 
-    "Biography", 
-    "Superhero"
+start_Genre = genres = ["Drama", "Comedy", "Action", "Romance", "Documentary", "Music", "Gaming", "Entertainment", "News", "Thriller", "Horror", "Science Fiction", "Fantasy", "Adventure", "Mystery", "Animation", "Family", "Historical", "Biography", "Superhero"
 ]
 em.config(openai_api_key) # configuring openai client for embedding model
 cache_file_name = "genre_embedding_cache.json"
@@ -83,7 +63,7 @@ def get_random_youtube_link():
 
 def get_title_from_url(url):
     r = requests.get(url)
-    soup = BeautifulSoup(r.text)
+    soup = BeautifulSoup(r.text, "html.parser")
 
     link = soup.find_all(name="title")[0]
     title = str(link)
@@ -109,29 +89,34 @@ def next_video():  # function return closest genre and binary encoding of next v
     closest_genre, genre_binary_encoding = embedding_bucketing_response(title, max_distance, genre_buckets, type_of_distance_calc, amount_of_binary_digits)
     print("Closest genre to title", title, "is", closest_genre)
     st.write("Genre:", closest_genre)
-    st.session_state.recommendation_result = agent_response()
-    st.write("Recommendation result: ", st.session_state.recommendation_result)
+    st.session_state.recommendation_result = agent_response(genre_binary_encoding)
+    recommended = "undefined"
+    if st.session_state.recommendation_result[0] == 0:
+        recommended = "Not recommended for you"
+    else:
+        recommended = "Recommended for you"
+    st.write("Recommendation result: ", recommended)
     st.video(st.session_state.videos_in_list[0])
     return closest_genre, genre_binary_encoding
 
 def train_agent(user_response):
-    input = get_agent_input()
+    binary_input = get_agent_input()
     if user_response == "pleasure":
         Cpos = True 
         Cneg = False
     elif user_response == "pain":
         Cneg = True
         Cpos = False
-    st.session_state.agent.next_state(INPUT=input, Cpos=Cpos, Cneg=Cneg, print_result=False)
+    st.session_state.agent.next_state(INPUT=binary_input, Cpos=Cpos, Cneg=Cneg, print_result=False)
 
 def get_agent_input():
     title = get_title_from_url(st.session_state.videos_in_list[0])
     closest_genre, genre_binary_encoding = embedding_bucketing_response(title, max_distance, genre_buckets, type_of_distance_calc, amount_of_binary_digits)
     return genre_binary_encoding
 
-def agent_response(): # function to get agent response on next video
-    input = get_agent_input()
-    st.session_state.agent.next_state( INPUT=input, print_result=False)
+def agent_response(binary_input): # function to get agent response on next video
+    #input = get_agent_input()
+    st.session_state.agent.next_state( INPUT=binary_input, print_result=False)
     response = st.session_state.agent.story[st.session_state.agent.state-1, st.session_state.agent.arch.Z__flat]
     return response
 
