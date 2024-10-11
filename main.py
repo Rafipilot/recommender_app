@@ -135,47 +135,64 @@ def agent_response(): # function to get agent response on next video
     response = st.session_state.agent.story[st.session_state.agent.state-1, st.session_state.agent.arch.Z__flat]
     return response
 
+
+
 # Title of the app
 st.title("Recommender")
 
-# Input for the number of links
-count = st.text_input("How many links to load", value='0')
-count = int(count) if count.isdigit() else 0  # Handle invalid input
+big_left, big_right = st.columns(2)
 
-# Start button logic
-if st.button("Start"):
-    if count > 0:
-        st.write(f"Loading {count} links...")
-        for i in range(count):
-            data = get_random_youtube_link()
-            while not data:  # Retry until a valid link is retrieved
+with big_left:
+    # Input for the number of links
+    count = st.text_input("How many links to load", value='0')
+    count = int(count) 
+    url = st.text_input("Enter a youtube video to test", value=None)
+    if url !=None:
+        print("Adding url")
+        try:
+            st.session_state.videos_in_list.insert(0, url)
+            next_video()
+        except Exception as e:
+            st.write("Error url not recognised")
+    # Start button logic
+    if st.button("Start"):
+        if count > 0:
+            st.write(f"Loading {count} links...")
+            for i in range(count):
                 data = get_random_youtube_link()
-            st.session_state.videos_in_list.append(data)
-        st.write(f"Loaded {count} videos.")
-        genre, genre_binary_encoding = next_video()
-small_right, small_left = st.columns(2)
-
-with small_right:
-    if st.button("Pleasure"):#
-        train_agent(user_response="pleasure")
-        if len(st.session_state.videos_in_list) > 0:
-            st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
-            display_video = True
-        else:
-            st.write("The list is empty, cannot pop any more items.")
-
-with small_left:
-    if st.button("Pain"):
-        train_agent(user_response="pain")
-        if len(st.session_state.videos_in_list) > 0:
-            st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
-            display_video = True
-        else:
-            st.write("The list is empty, cannot pop any more items.")
+                while not data:  # Retry until a valid link is retrieved
+                    data = get_random_youtube_link()
+                if data not in st.session_state.videos_in_list:
+                    st.session_state.videos_in_list.append(data)
+            st.write(f"Loaded {count} videos.")
+            genre, genre_binary_encoding = next_video()
 
 
-if st.session_state.videos_in_list:
-    if display_video == True:
-        genre, genre_binary_encoding = next_video()
-else:
-    st.write("No more videos in the list.")
+
+
+with big_right:
+    small_right, small_left = st.columns(2)
+    with small_right:
+        if st.button("Pleasure"):#
+            train_agent(user_response="pleasure")
+            if len(st.session_state.videos_in_list) > 0:
+                st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
+                display_video = True
+            else:
+                st.write("The list is empty, cannot pop any more items.")
+
+    with small_left:
+        if st.button("Pain"):
+            train_agent(user_response="pain")
+            if len(st.session_state.videos_in_list) > 0:
+                st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
+                display_video = True
+            else:
+                st.write("The list is empty, cannot pop any more items.")
+
+
+    if st.session_state.videos_in_list:
+        if display_video == True:
+            genre, genre_binary_encoding = next_video()
+    else:
+        st.write("No more videos in the list.")
