@@ -25,7 +25,9 @@ if "recommendation_result" not in st.session_state:
     st.session_state.recommendation_result = []
 if "current_binary_input" not in st.session_state:
     st.session_state.current_binary_input = []
-
+if "training_history" not in st.session_state:
+    st.session_state.training_history = (np.zeros([100,6], dtype="O"))
+    st.session_state.numberVideos = 0
 
 display_video = False
 
@@ -141,7 +143,7 @@ def next_video():  # function return closest genre and binary encoding of next v
     length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary = get_video_data_from_url(st.session_state.videos_in_list[0])
     st.write("Genre:", closest_genre, "Length:", length, "Fiction/Non-fiction: ", fnf)
     binary_input_to_agent = genre_binary_encoding+ length_binary + fnf_binary
-   # st.write("binary input:", binary_input_to_agent)
+   # st.write("binary input:", binary_input_to_agent)++
     st.session_state.current_binary_input = binary_input_to_agent # storing the current binary input to reduce redundant calls
     st.session_state.recommendation_result = agent_response(binary_input_to_agent)
     recommended = "undefined"
@@ -149,9 +151,13 @@ def next_video():  # function return closest genre and binary encoding of next v
         recommended = "Not recommended for you"
     else:
         recommended = "Recommended for you"
+    mood = "none"
+    title = get_title_from_url(st.session_state.videos_in_list[0])
+    temp_history = [title, recommended, closest_genre, length, fnf, mood]
     st.write("Recommendation result: ", recommended)
-
+    st.session_state.training_history[st.session_state.numberVideos, :] = temp_history
     st.video(st.session_state.videos_in_list[0])
+    st.session_state.numberVideos += 1
     return closest_genre, genre_binary_encoding
 
 def train_agent(user_response):
@@ -227,5 +233,6 @@ with big_right:
 
     if display_video == True:
         genre, genre_binary_encoding = next_video()
+        st.write(st.session_state.training_history[0:st.session_state.numberVideos, :])
     else:
         st.write("No more videos in the list.")
