@@ -29,10 +29,12 @@ if "current_binary_input" not in st.session_state:
 
 display_video = False
 
+#init agent
 if "agent" not in st.session_state:
     print("-------creating agent-------")
     st.session_state.agent = ao.Agent(arch, notes=[])
 
+# Constants for embedding bucketing
 max_distance = 20 # setting it high for no auto bucketing
 amount_of_binary_digits = 10
 type_of_distance_calc = "COSINE SIMILARITY"
@@ -184,7 +186,7 @@ with big_left:
                 if data not in st.session_state.videos_in_list:
                     st.session_state.videos_in_list.append(data)
             st.write(f"Loaded {count} videos.")
-            genre, genre_binary_encoding = next_video()
+            display_video = True
 
 
 
@@ -193,7 +195,7 @@ with big_right:
     small_right, small_left = st.columns(2)
     with small_right:
         if st.button("Pleasure"):#
-            train_agent(user_response="pleasure")
+            train_agent(user_response="pleasure") # Train agent positively as user like recommendation
             if len(st.session_state.videos_in_list) > 0:
                 st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
                 display_video = True
@@ -202,7 +204,7 @@ with big_right:
 
     with small_left:
         if st.button("Pain"):
-            train_agent(user_response="pain")
+            train_agent(user_response="pain") # train agent negatively as user dilike recommendation
             if len(st.session_state.videos_in_list) > 0:
                 st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
                 display_video = True
@@ -210,8 +212,8 @@ with big_right:
                 st.write("The list is empty, cannot pop any more items.")
 
 
-    if st.session_state.videos_in_list:
-        if display_video == True:
-            genre, genre_binary_encoding = next_video()
+
+    if display_video == True:
+        genre, genre_binary_encoding = next_video()
     else:
         st.write("No more videos in the list.")
