@@ -83,6 +83,19 @@ def get_title_from_url(url):
     print("title", title)
     return title
 
+def get_FNF_from_title(title):
+    input_message = ("Is this video title fiction or not"+ title)
+    response = em.llm_call(input_message)
+    response = response.upper() # Making the response upper case for no ambiguity
+    fnf_binary = []
+    if "FICTION" in response:
+        fnf_binary = [1]
+        response = "Fiction"
+    else:
+        fnf_binary = [0]
+        response = "Non-fiction"
+    return fnf_binary, response
+
 def get_length_from_url(url): # returns if the video is short, medium or long in binary
     yt = YouTube(url)
     try:
@@ -108,7 +121,8 @@ def get_video_data_from_url(url):
     closest_genre, genre_binary_encoding = embedding_bucketing_response(title, max_distance, genre_buckets, type_of_distance_calc, amount_of_binary_digits)
     genre_binary_encoding = genre_binary_encoding.tolist()
     print("Closest genre to title", title, "is", closest_genre)
-    return length, length_binary, closest_genre, genre_binary_encoding
+    fnf_binary, fnf = get_FNF_from_title(title)
+    return length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary
 
 def embedding_bucketing_response(uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits):
     sort_response = em.auto_sort(uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits) 
@@ -121,11 +135,12 @@ def embedding_bucketing_response(uncategorized_input, max_distance, bucket_list,
     return closest_bucket, bucket_binary # returning the closest bucket and its binary encoding
 
 
+
 def next_video():  # function return closest genre and binary encoding of next video and displays it 
     display_video = False
-    length, length_binary, closest_genre, genre_binary_encoding = get_video_data_from_url(st.session_state.videos_in_list[0])
-    st.write("Genre:", closest_genre, "Length:", length)
-    binary_input_to_agent = genre_binary_encoding+ length_binary
+    length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary = get_video_data_from_url(st.session_state.videos_in_list[0])
+    st.write("Genre:", closest_genre, "Length:", length, "Fiction/Non-fiction: ", fnf)
+    binary_input_to_agent = genre_binary_encoding+ length_binary + fnf_binary
    # st.write("binary input:", binary_input_to_agent)
     st.session_state.current_binary_input = binary_input_to_agent # storing the current binary input to reduce redundant calls
     st.session_state.recommendation_result = agent_response(binary_input_to_agent)
@@ -187,9 +202,6 @@ with big_left:
                     st.session_state.videos_in_list.append(data)
             st.write(f"Loaded {count} videos.")
             display_video = True
-
-
-
 
 with big_right:
     small_right, small_left = st.columns(2)
