@@ -1,10 +1,12 @@
 import streamlit as st
 import scrapetube
 import random
-
+import numpy as np
 ## for getting title
 import requests
 from bs4 import BeautifulSoup
+
+from pytube import YouTube
 
 import embedding_bucketing.embedding_model_test as em
 from config import openai_api_key
@@ -17,6 +19,9 @@ if "videos_in_list" not in st.session_state:
     st.session_state.videos_in_list = []
 if "recommendation_result" not in st.session_state:
     st.session_state.recommendation_result = []
+if "current_binary_input" not in st.session_state:
+    st.session_state.current_binary_input = []
+
 
 display_video = False
 
@@ -72,6 +77,32 @@ def get_title_from_url(url):
     print("title", title)
     return title
 
+def get_length_from_url(url): # returns if the video is short, medium or long in binary
+    yt = YouTube(url)
+    try:
+        length = yt.length
+    except Exception as e:
+        print("error in getting length", e)
+        length = 0
+    length_binary = []
+    if length < 5:
+        length_binary = [0, 0]
+    elif length >= 5 and length < 20:
+        length_binary = [0, 1]
+    else:
+        length_binary = [1, 1]
+
+
+    return length, length_binary
+
+def get_video_data_from_url(url):
+    length, length_binary = get_length_from_url(url)
+    title = get_title_from_url(url)
+    closest_genre, genre_binary_encoding = embedding_bucketing_response(title, max_distance, genre_buckets, type_of_distance_calc, amount_of_binary_digits)
+    genre_binary_encoding = genre_binary_encoding.tolist()
+    print("Closest genre to title", title, "is", closest_genre)
+    return length, length_binary, closest_genre, genre_binary_encoding
+
 def embedding_bucketing_response(uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits):
     sort_response = em.auto_sort(uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits) 
 
@@ -85,22 +116,24 @@ def embedding_bucketing_response(uncategorized_input, max_distance, bucket_list,
 
 def next_video():  # function return closest genre and binary encoding of next video and displays it 
     display_video = False
-    title = get_title_from_url(st.session_state.videos_in_list[0])
-    closest_genre, genre_binary_encoding = embedding_bucketing_response(title, max_distance, genre_buckets, type_of_distance_calc, amount_of_binary_digits)
-    print("Closest genre to title", title, "is", closest_genre)
-    st.write("Genre:", closest_genre)
-    st.session_state.recommendation_result = agent_response(genre_binary_encoding)
+    length, length_binary, closest_genre, genre_binary_encoding = get_video_data_from_url(st.session_state.videos_in_list[0])
+    st.write("Genre:", closest_genre, "Length:", length)
+    binary_input_to_agent = genre_binary_encoding+ length_binary
+    st.write("binary input:", binary_input_to_agent)
+    st.session_state.current_binary_input = binary_input_to_agent # storing the current binary input to reduce redundant calls
+    st.session_state.recommendation_result = agent_response(binary_input_to_agent)
     recommended = "undefined"
     if st.session_state.recommendation_result[0] == 0:
         recommended = "Not recommended for you"
     else:
         recommended = "Recommended for you"
     st.write("Recommendation result: ", recommended)
+
     st.video(st.session_state.videos_in_list[0])
     return closest_genre, genre_binary_encoding
 
 def train_agent(user_response):
-    binary_input = get_agent_input()
+    binary_input = st.session_state.current_binary_input
     if user_response == "pleasure":
         Cpos = True 
         Cneg = False
@@ -109,10 +142,6 @@ def train_agent(user_response):
         Cpos = False
     st.session_state.agent.next_state(INPUT=binary_input, Cpos=Cpos, Cneg=Cneg, print_result=False)
 
-def get_agent_input():
-    title = get_title_from_url(st.session_state.videos_in_list[0])
-    closest_genre, genre_binary_encoding = embedding_bucketing_response(title, max_distance, genre_buckets, type_of_distance_calc, amount_of_binary_digits)
-    return genre_binary_encoding
 
 def agent_response(binary_input): # function to get agent response on next video
     #input = get_agent_input()
