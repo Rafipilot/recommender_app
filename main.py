@@ -38,7 +38,7 @@ if "agent" not in st.session_state:
 max_distance = 20 # setting it high for no auto bucketing
 amount_of_binary_digits = 10
 type_of_distance_calc = "COSINE SIMILARITY"
-start_Genre = genres = ["Drama", "Comedy", "Action", "Romance", "Documentary", "Music", "Gaming", "Entertainment", "News", "Thriller", "Horror", "Science Fiction", "Fantasy", "Adventure", "Mystery", "Animation", "Family", "Historical", "Biography", "Superhero"
+start_Genre = ["Drama", "Comedy", "Action", "Romance", "Documentary", "Music", "Gaming", "Entertainment", "News", "Thriller", "Horror", "Science Fiction", "Fantasy", "Adventure", "Mystery", "Animation", "Family", "Historical", "Biography", "Superhero"
 ]
 em.config(openai_api_key) # configuring openai client for embedding model
 cache_file_name = "genre_embedding_cache.json"
