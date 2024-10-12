@@ -1,7 +1,12 @@
+ao_arch==0.1.2
+ao_core==0.1.2
 beautifulsoup4==4.12.3
 embedding_bucketing==0.1.0
 embedding_buckting==0.1.0
+numpy==2.1.2
+pytube==15.0.0
 Requests==2.32.3
 scrapetube==2.5.1
 streamlit==1.38.0
+
 git+https://github.com/Rafipilot/embedding_bucketing

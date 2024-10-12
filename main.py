@@ -1,16 +1,20 @@
 import streamlit as st
-import scrapetube
+
+# for getting random links
+import scrapetube 
 import random
+#to convert numpy array to list
 import numpy as np
 ## for getting title
 import requests
 from bs4 import BeautifulSoup
 
+#for getting youtube length
 from pytube import YouTube
-
+#for bucketing
 import embedding_bucketing.embedding_model_test as em
+#own modules ao_core arch and config
 from config import openai_api_key
-
 import ao_core as ao
 from arch_recommender import arch
 
@@ -84,6 +88,7 @@ def get_length_from_url(url): # returns if the video is short, medium or long in
     except Exception as e:
         print("error in getting length", e)
         length = 0
+    length = round(length / 60, 2)
     length_binary = []
     if length < 5:
         length_binary = [0, 0]
@@ -119,7 +124,7 @@ def next_video():  # function return closest genre and binary encoding of next v
     length, length_binary, closest_genre, genre_binary_encoding = get_video_data_from_url(st.session_state.videos_in_list[0])
     st.write("Genre:", closest_genre, "Length:", length)
     binary_input_to_agent = genre_binary_encoding+ length_binary
-    st.write("binary input:", binary_input_to_agent)
+   # st.write("binary input:", binary_input_to_agent)
     st.session_state.current_binary_input = binary_input_to_agent # storing the current binary input to reduce redundant calls
     st.session_state.recommendation_result = agent_response(binary_input_to_agent)
     recommended = "undefined"
