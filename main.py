@@ -150,7 +150,7 @@ def Get_mood_binary():
     return mood_binary, st.session_state.mood
 
 def sort_agent_response(agent_response):
-    st.write("Agent response in binary: ", agent_response)
+    #st.write("Agent response in binary: ", agent_response)
     count = 0
     for element in agent_response:
         if element == 1:  
