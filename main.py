@@ -149,6 +149,14 @@ def Get_mood_binary():
         mood_binary = [0,0] # if mood is not defined then give it 0,0
     return mood_binary, st.session_state.mood
 
+def sort_agent_response(agent_response):
+    st.write("Agent response in binary: ", agent_response)
+    count = 0
+    for element in agent_response:
+        if element == 1:  
+            count += 1
+    percentage = (count / len(agent_response)) * 100 
+    return percentage
 def next_video():  # function return closest genre and binary encoding of next video and displays it 
     display_video = False
     length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary = get_video_data_from_url(st.session_state.videos_in_list[0])
@@ -159,11 +167,8 @@ def next_video():  # function return closest genre and binary encoding of next v
    # st.write("binary input:", binary_input_to_agent)++
     st.session_state.current_binary_input = binary_input_to_agent # storing the current binary input to reduce redundant calls
     st.session_state.recommendation_result = agent_response(binary_input_to_agent)
-    recommended = "undefined"
-    if st.session_state.recommendation_result[0] == 0:
-        recommended = "Not recommended for you"
-    else:
-        recommended = "Recommended for you"
+    percentage_response = sort_agent_response(st.session_state.recommendation_result) 
+    recommended = ("Chance recommended to you: "+ str(percentage_response) +"%")
     title = get_title_from_url(st.session_state.videos_in_list[0])
     temp_history = [title, recommended, closest_genre, length, fnf, mood]
     st.write("Recommendation result: ", recommended)
