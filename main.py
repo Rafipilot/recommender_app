@@ -197,10 +197,10 @@ with big_left:
         except Exception as e:
             st.write("Error url not recognised")
     # Start button logic
-    if st.button("Start"):
+    if st.button(f"Load {count} links"):
         if count > 0:
-            st.write(f"Loading {count} links...")
-            for i in range(count):
+            
+            for i in range(count):    
                 data = get_random_youtube_link()
                 while not data:  # Retry until a valid link is retrieved
                     data = get_random_youtube_link()
@@ -208,7 +208,8 @@ with big_left:
                     st.session_state.videos_in_list.append(data)
             st.write(f"Loaded {count} videos.")
             display_video = True
-
+    st.write("### Training History:")
+    st.write(st.session_state.training_history[0:st.session_state.numberVideos, :])
 with big_right:
     small_right, small_left = st.columns(2)
     with small_right:
@@ -230,9 +231,8 @@ with big_right:
                 st.write("The list is empty, cannot pop any more items.")
 
 
-
+    
     if display_video == True:
         genre, genre_binary_encoding = next_video()
-        st.write(st.session_state.training_history[0:st.session_state.numberVideos, :])
     else:
         st.write("No more videos in the list.")
