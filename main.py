@@ -28,6 +28,8 @@ if "current_binary_input" not in st.session_state:
 if "training_history" not in st.session_state:
     st.session_state.training_history = (np.zeros([100,6], dtype="O"))
     st.session_state.numberVideos = 0
+if "mood" not in st.session_state:
+    st.session_state.mood = "Random"
 
 display_video = False
 
@@ -113,8 +115,6 @@ def get_length_from_url(url): # returns if the video is short, medium or long in
         length_binary = [0, 1]
     else:
         length_binary = [1, 1]
-
-
     return length, length_binary
 
 def get_video_data_from_url(url):
@@ -136,13 +136,26 @@ def embedding_bucketing_response(uncategorized_input, max_distance, bucket_list,
 
     return closest_bucket, bucket_binary # returning the closest bucket and its binary encoding
 
-
+def Get_mood_binary():
+    mood = st.session_state.mood.upper()
+    # converting mood to binary here
+    if mood == "RANDOM":
+        mood_binary = [1,0]
+    if mood == "Serious":
+        mood_binary = [1,1]
+    if mood == "FUNNY":
+        mood_binary = [0,1]
+    else:
+        mood_binary = [0,0] # if mood is not defined then give it 0,0
+    return mood_binary, st.session_state.mood
 
 def next_video():  # function return closest genre and binary encoding of next video and displays it 
     display_video = False
     length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary = get_video_data_from_url(st.session_state.videos_in_list[0])
-    st.write("Genre:", closest_genre, "Length:", length, "Fiction/Non-fiction: ", fnf)
-    binary_input_to_agent = genre_binary_encoding+ length_binary + fnf_binary
+   
+    mood_binary, mood = Get_mood_binary()
+    st.write("Genre:", closest_genre, "Length:", length, "Fiction/Non-fiction: ", fnf, "Mood:", mood)
+    binary_input_to_agent = genre_binary_encoding+ length_binary + fnf_binary +mood_binary
    # st.write("binary input:", binary_input_to_agent)++
     st.session_state.current_binary_input = binary_input_to_agent # storing the current binary input to reduce redundant calls
     st.session_state.recommendation_result = agent_response(binary_input_to_agent)
@@ -151,7 +164,6 @@ def next_video():  # function return closest genre and binary encoding of next v
         recommended = "Not recommended for you"
     else:
         recommended = "Recommended for you"
-    mood = "none"
     title = get_title_from_url(st.session_state.videos_in_list[0])
     temp_history = [title, recommended, closest_genre, length, fnf, mood]
     st.write("Recommendation result: ", recommended)
@@ -185,6 +197,7 @@ st.title("Recommender")
 big_left, big_right = st.columns(2)
 
 with big_left:
+    st.session_state.mood = st.selectbox("Select your mood", ("Random", "Funny", "Serious"))
     # Input for the number of links
     count = st.text_input("How many links to load", value='0')
     count = int(count) 
