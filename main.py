@@ -162,7 +162,11 @@ def next_video():  # function return closest genre and binary encoding of next v
     length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary = get_video_data_from_url(st.session_state.videos_in_list[0])
    
     mood_binary, mood = Get_mood_binary()
-    st.write("Genre:", closest_genre, "Length:", length, "Fiction/Non-fiction: ", fnf, "Mood:", mood)
+    st.write("Genre: ", closest_genre)
+    st.write("Length: ", length)
+    st.write("Fiction/Non-fiction: ", fnf)
+    st.write("User's Mood: ", mood)
+    st.write("")
     binary_input_to_agent = genre_binary_encoding+ length_binary + fnf_binary +mood_binary
    # st.write("binary input:", binary_input_to_agent)++
     st.session_state.current_binary_input = binary_input_to_agent # storing the current binary input to reduce redundant calls
@@ -202,7 +206,7 @@ st.title("Recommender")
 big_left, big_right = st.columns(2)
 
 with big_left:
-    st.session_state.mood = st.selectbox("Select your mood", ("Random", "Funny", "Serious"))
+    st.session_state.mood = st.selectbox("Set your mood (as the user)", ("Random", "Funny", "Serious"))
     # Input for the number of links
     count = st.text_input("How many links to load", value='0')
     count = int(count) 
