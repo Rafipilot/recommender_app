@@ -262,7 +262,7 @@ with big_right:
     with small_right:
         if st.button("Pleasure"):#
             train_agent(user_response="pleasure") # Train agent positively as user like recommendation
-            if len(st.session_state.videos_in_list) > 0:
+            if len(st.session_state.videos_in_list) > 1:
                 st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
                 display_video = True
             else:
@@ -271,7 +271,7 @@ with big_right:
     with small_left:
         if st.button("Pain"):
             train_agent(user_response="pain") # train agent negatively as user dilike recommendation
-            if len(st.session_state.videos_in_list) > 0:
+            if len(st.session_state.videos_in_list) > 1:
                 st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
                 display_video = True
             else:
