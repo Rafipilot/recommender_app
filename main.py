@@ -148,7 +148,7 @@ def get_video_data_from_url(url):
     return length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary
 
 def embedding_bucketing_response(cache, uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits):
-    sort_response = em.auto_sort(cache, uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits) 
+    sort_response = em.auto_sort(uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits) 
 
     closest_distance = sort_response[0]
     closest_bucket   = sort_response[1]  # which bucket the uncategorized_input was placed in
