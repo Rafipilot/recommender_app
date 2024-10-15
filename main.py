@@ -64,8 +64,10 @@ type_of_distance_calc = "COSINE SIMILARITY"
 start_Genre = ["Drama", "Comedy", "Action", "Romance", "Documentary", "Music", "Gaming", "Entertainment", "News", "Thriller", "Horror", "Science Fiction", "Fantasy", "Adventure", "Mystery", "Animation", "Family", "Historical", "Biography", "Superhero"
 ]
 em.config(openai_api_key) # configuring openai client for embedding model
-cache_file_name = "genre_embedding_cache.json"
-cache, genre_buckets = em.init(cache_file_name, start_Genre)
+
+if "cache" not in st.session_state:
+    cache_file_name = "genre_embedding_cache.json"
+    st.session_state.cache, st.session_state.genre_buckets = em.init(cache_file_name, start_Genre)
 
 
 st.set_page_config(page_title="DemoRS", layout="wide")
@@ -139,14 +141,14 @@ def get_length_from_url(url): # returns if the video is short, medium or long in
 def get_video_data_from_url(url):
     length, length_binary = get_length_from_url(url)
     title = get_title_from_url(url)
-    closest_genre, genre_binary_encoding = embedding_bucketing_response(title, max_distance, genre_buckets, type_of_distance_calc, amount_of_binary_digits)
+    closest_genre, genre_binary_encoding = embedding_bucketing_response(st.session_state.cache, title, max_distance, st.session_state.genre_buckets, type_of_distance_calc, amount_of_binary_digits)
     genre_binary_encoding = genre_binary_encoding.tolist()
     print("Closest genre to title", title, "is", closest_genre)
     fnf_binary, fnf = get_FNF_from_title(title)
     return length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary
 
-def embedding_bucketing_response(uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits):
-    sort_response = em.auto_sort(uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits) 
+def embedding_bucketing_response(cache, uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits):
+    sort_response = em.auto_sort(cache, uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits) 
 
     closest_distance = sort_response[0]
     closest_bucket   = sort_response[1]  # which bucket the uncategorized_input was placed in
