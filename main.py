@@ -232,8 +232,7 @@ with big_left:
                     st.session_state.videos_in_list.append(data)
             st.write(f"Loaded {count} videos.")
             display_video = True
-    st.write("### Training History:")
-    st.write(st.session_state.training_history[0:st.session_state.numberVideos, :])
+
 with big_right:
     small_right, small_left = st.columns(2)
     with small_right:
@@ -260,3 +259,6 @@ with big_right:
         genre, genre_binary_encoding = next_video()
     else:
         st.write("No more videos in the list.")
+
+st.write("### Training History:")
+st.write(st.session_state.training_history[0:st.session_state.numberVideos, :])
