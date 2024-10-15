@@ -38,6 +38,25 @@ if "agent" not in st.session_state:
     print("-------creating agent-------")
     st.session_state.agent = ao.Agent(arch, notes=[])
 
+    random_input_0 = np.random.randint(0, 2, st.session_state.agent.arch.Q__flat.shape, dtype=np.int8)
+    random_input_1 = np.random.randint(0, 2, st.session_state.agent.arch.Q__flat.shape, dtype=np.int8)
+    random_input_2 = np.random.randint(0, 2, st.session_state.agent.arch.Q__flat.shape, dtype=np.int8)
+    random_input_3 = np.random.randint(0, 2, st.session_state.agent.arch.Q__flat.shape, dtype=np.int8)
+
+    empty_label = np.zeros(st.session_state.agent.arch.Z__flat.shape, dtype=np.int8)
+    full_label   = np.ones(st.session_state.agent.arch.Z__flat.shape, dtype=np.int8)
+
+    st.session_state.agent.reset_state()
+    st.session_state.agent.next_state(random_input_0, empty_label)
+    st.session_state.agent.reset_state()
+    st.session_state.agent.next_state(random_input_1, empty_label)
+    st.session_state.agent.reset_state()
+    st.session_state.agent.next_state(random_input_2,  full_label)
+    st.session_state.agent.reset_state()
+    st.session_state.agent.next_state(random_input_3,  full_label)
+    st.session_state.agent.reset_state()
+
+
 # Constants for embedding bucketing
 max_distance = 20 # setting it high for no auto bucketing
 amount_of_binary_digits = 10
