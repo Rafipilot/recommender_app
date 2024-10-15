@@ -182,6 +182,7 @@ def next_video():  # function return closest genre and binary encoding of next v
     return closest_genre, genre_binary_encoding
 
 def train_agent(user_response):
+    st.session_state.agent.reset_state()
     binary_input = st.session_state.current_binary_input
     if user_response == "pleasure":
         Cpos = True 
@@ -194,6 +195,7 @@ def train_agent(user_response):
 
 def agent_response(binary_input): # function to get agent response on next video
     #input = get_agent_input()
+    st.session_state.agent.reset_state()
     st.session_state.agent.next_state( INPUT=binary_input, print_result=False)
     response = st.session_state.agent.story[st.session_state.agent.state-1, st.session_state.agent.arch.Z__flat]
     return response
