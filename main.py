@@ -71,9 +71,7 @@ st.set_page_config(page_title="DemoRS", layout="wide")
 random_search_terms = ['funny', 'gaming', 'science', 'technology', 'news', 'random', 'adventure', "programming", "computer science"]
 
 
-def get_random_youtube_link():
-    print("Attempting to get a random video link...")
-    
+def get_random_youtube_link():  
     # Select a random search term
     search_term = random.choice(random_search_terms)
     
@@ -100,7 +98,6 @@ def get_title_from_url(url):
     title = str(link)
     title = title.replace("<title>","")
     title = title.replace("</title>","")
-    print("title", title)
     return title
 
 def get_FNF_from_title(title):
@@ -138,7 +135,6 @@ def get_video_data_from_url(url):
     title = get_title_from_url(url)
     closest_genre, genre_binary_encoding = embedding_bucketing_response(st.session_state.cache, title, max_distance, st.session_state.genre_buckets, type_of_distance_calc, amount_of_binary_digits)
     genre_binary_encoding = genre_binary_encoding.tolist()
-    print("Closest genre to title", title, "is", closest_genre)
     fnf_binary, fnf = get_FNF_from_title(title)
     return length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary
 
@@ -210,7 +206,6 @@ def train_agent(user_response):
         label = np.zeros(st.session_state.agent.arch.Z__flat.shape, dtype=np.int8)
     
     # st.session_state.agent.next_state(INPUT=binary_input, Cpos=Cpos, Cneg=Cneg, print_result=False)
-    print("Input:", binary_input, "Label: ", label)
     st.session_state.agent.next_state(INPUT=binary_input, LABEL=label, print_result=False)
 
 
@@ -235,7 +230,6 @@ with big_left:
     count = int(count) 
     url = st.text_input("Enter a youtube video to test", value=None)
     if url !=None:
-        print("Adding url")
         try:
             st.session_state.videos_in_list.insert(0, url)
             next_video()
