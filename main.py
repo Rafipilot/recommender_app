@@ -46,14 +46,15 @@ if "agent" not in st.session_state:
     empty_label = np.zeros(st.session_state.agent.arch.Z__flat.shape, dtype=np.int8)
     full_label   = np.ones(st.session_state.agent.arch.Z__flat.shape, dtype=np.int8)
 
+# intially train on random inputs 
     st.session_state.agent.reset_state()
-    st.session_state.agent.next_state(random_input_0, empty_label)
+    #st.session_state.agent.next_state(random_input_0, empty_label)
     st.session_state.agent.reset_state()
-    st.session_state.agent.next_state(random_input_1, empty_label)
+    #st.session_state.agent.next_state(random_input_1, empty_label)
     st.session_state.agent.reset_state()
-    st.session_state.agent.next_state(random_input_2,  full_label)
+    #st.session_state.agent.next_state(random_input_2,  full_label)
     st.session_state.agent.reset_state()
-    st.session_state.agent.next_state(random_input_3,  full_label)
+    #st.session_state.agent.next_state(random_input_3,  full_label)
     st.session_state.agent.reset_state()
 
 
@@ -148,7 +149,7 @@ def get_video_data_from_url(url):
     return length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary
 
 def embedding_bucketing_response(cache, uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits):
-    sort_response = em.auto_sort(uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits) 
+    sort_response = em.auto_sort(cache, uncategorized_input, max_distance, bucket_list, type_of_distance_calc, amount_of_binary_digits)  
 
     closest_distance = sort_response[0]
     closest_bucket   = sort_response[1]  # which bucket the uncategorized_input was placed in
