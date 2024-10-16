@@ -43,20 +43,14 @@ if "agent" not in st.session_state:
     random_input_2 = np.random.randint(0, 2, st.session_state.agent.arch.Q__flat.shape, dtype=np.int8)
     random_input_3 = np.random.randint(0, 2, st.session_state.agent.arch.Q__flat.shape, dtype=np.int8)
 
-    empty_label = np.zeros(st.session_state.agent.arch.Z__flat.shape, dtype=np.int8)
-    full_label   = np.ones(st.session_state.agent.arch.Z__flat.shape, dtype=np.int8)
+    random_label = np.random.randint(0,2, st.session_state.agent.arch.Z__flat.shape, dtype=np.int8)
+
+    random_inputs = [random_input_0, random_input_1, random_input_2, random_input_3]
 
 # intially train on random inputs 
-    st.session_state.agent.reset_state()
-    #st.session_state.agent.next_state(random_input_0, empty_label)
-    st.session_state.agent.reset_state()
-    #st.session_state.agent.next_state(random_input_1, empty_label)
-    st.session_state.agent.reset_state()
-    #st.session_state.agent.next_state(random_input_2,  full_label)
-    st.session_state.agent.reset_state()
-    #st.session_state.agent.next_state(random_input_3,  full_label)
-    st.session_state.agent.reset_state()
-
+    for i in range(4):
+        st.session_state.agent.reset_state()
+        st.session_state.agent.next_state(random_inputs[i], random_label)
 
 # Constants for embedding bucketing
 max_distance = 20 # setting it high for no auto bucketing
@@ -206,15 +200,17 @@ def next_video():  # function return closest genre and binary encoding of next v
 def train_agent(user_response):
     st.session_state.agent.reset_state()
     binary_input = st.session_state.current_binary_input
-    if user_response == "pleasure":
+    if user_response == "RECOMMEND MORE":
         Cpos = True 
         Cneg = False
         label  = np.ones(st.session_state.agent.arch.Z__flat.shape, dtype=np.int8)
-    elif user_response == "pain":
+    elif user_response == "STOP RECOMMENDING":
         Cneg = True
         Cpos = False
         label = np.zeros(st.session_state.agent.arch.Z__flat.shape, dtype=np.int8)
+    
     # st.session_state.agent.next_state(INPUT=binary_input, Cpos=Cpos, Cneg=Cneg, print_result=False)
+    print("Input:", binary_input, "Label: ", label)
     st.session_state.agent.next_state(INPUT=binary_input, LABEL=label, print_result=False)
 
 
@@ -262,8 +258,8 @@ with big_left:
 with big_right:
     small_right, small_left = st.columns(2)
     with small_right:
-        if st.button("Pleasure"):#
-            train_agent(user_response="pleasure") # Train agent positively as user like recommendation
+        if st.button("RECOMMEND MORE"):#
+            train_agent(user_response="RECOMMEND MORE") # Train agent positively as user like recommendation
             if len(st.session_state.videos_in_list) > 1:
                 st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
                 display_video = True
@@ -271,8 +267,8 @@ with big_right:
                 st.write("The list is empty, cannot pop any more items.")
 
     with small_left:
-        if st.button("Pain"):
-            train_agent(user_response="pain") # train agent negatively as user dilike recommendation
+        if st.button("STOP RECOMMENDING"):
+            train_agent(user_response="STOP RECOMMENDING") # train agent negatively as user dilike recommendation
             if len(st.session_state.videos_in_list) > 1:
                 st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
                 display_video = True
