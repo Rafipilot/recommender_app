@@ -230,11 +230,16 @@ with big_left:
     count = int(count) 
     url = st.text_input("Enter a youtube video to test", value=None)
     if url !=None:
-        try:
-            st.session_state.videos_in_list.insert(0, url)
-            next_video()
-        except Exception as e:
-            st.write("Error url not recognised")
+        if st.button("Add Link"):
+            try:
+                if url not in st.session_state.videos_in_list:
+                    st.session_state.videos_in_list.insert(0, url)
+                    print(st.session_state.videos_in_list)
+                else:
+                    st.write("Unable to add link as it is already entered")
+            except Exception as e:
+                st.write("Error url not recognised")
+            display_video = True
     # Start button logic
     if st.button(f"Load {count} links"):
         if count > 0:
