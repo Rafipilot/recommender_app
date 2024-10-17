@@ -265,6 +265,7 @@ with big_right:
                 st.session_state.display_video = True
             else:
                 st.write("The list is empty, cannot pop any more items.")
+                st.session_state.display_video = False  #Stop displaying the video once we have run out of videos
 
     with small_left:
         if st.button("STOP RECOMMENDING"):
@@ -274,7 +275,7 @@ with big_right:
                 st.session_state.display_video = True
             else:
                 st.write("The list is empty, cannot pop any more items.")
-
+                st.session_state.display_video = False  #Stop displaying the video once we have run out of videos
 
     
     if st.session_state.display_video == True:
