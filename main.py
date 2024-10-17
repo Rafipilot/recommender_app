@@ -176,6 +176,13 @@ def sort_agent_response(agent_response):
     return percentage
 def next_video():  # function return closest genre and binary encoding of next video and displays it 
     #display_video = False
+    data = get_random_youtube_link()
+    while not data:  # Retry until a valid link is retrieved
+        data = get_random_youtube_link()
+    if data not in st.session_state.videos_in_list:
+        st.session_state.videos_in_list.append(data)
+
+
     length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary = get_video_data_from_url(st.session_state.videos_in_list[0])
    
     mood_binary, mood = Get_mood_binary()
@@ -231,8 +238,8 @@ big_left, big_right = st.columns(2)
 with big_left:
     st.session_state.mood = st.selectbox("Set your mood (as the user)", ("Random", "Funny", "Serious"))
     # Input for the number of links
-    count = st.text_input("How many links to load", value='0')
-    count = int(count) 
+#    count = st.text_input("How many links to load", value='0')
+#    count = int(count) 
     url = st.text_input("Enter a youtube video to test", value=None)
     if url !=None:
         if st.button("Add Link"):
@@ -246,17 +253,27 @@ with big_left:
                 st.write("Error url not recognised")
             st.session_state.display_video = True
     # Start button logic
-    if st.button(f"Load {count} links"):
-        if count > 0:
-            
-            for i in range(count):    
-                data = get_random_youtube_link()
-                while not data:  # Retry until a valid link is retrieved
-                    data = get_random_youtube_link()
-                if data not in st.session_state.videos_in_list:
-                    st.session_state.videos_in_list.append(data)
-            st.write(f"Loaded {count} videos.")
-            st.session_state.display_video = True
+#    if st.button(f"Load {count} links"):
+#        if count > 0:
+#            
+#            for i in range(count):    
+#                data = get_random_youtube_link()
+#                while not data:  # Retry until a valid link is retrieved
+#                    data = get_random_youtube_link()
+#                if data not in st.session_state.videos_in_list:
+#                   st.session_state.videos_in_list.append(data)
+#            st.write(f"Loaded {count} videos.")
+#            st.session_state.display_video = True
+
+    if st.button("Start"):
+        st.session_state.display_video = True
+
+        data = get_random_youtube_link()
+        while not data:  # Retry until a valid link is retrieved
+            data = get_random_youtube_link()
+        if data not in st.session_state.videos_in_list:
+            st.session_state.videos_in_list.append(data)
+
     st.write("### Training History:")
     st.write(st.session_state.training_history[0:st.session_state.numberVideos, :])
 with big_right:
