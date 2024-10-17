@@ -4,7 +4,7 @@ pytube==15.0.0
 Requests==2.32.3
 scrapetube==2.5.1
 streamlit==1.38.0
-
+import yt_dlp
 git+https://github.com/Rafipilot/embedding_bucketing
 # git+https://github.com/aolabsai/ao_core
 # git+https://github.com/aolabsai/ao_arch

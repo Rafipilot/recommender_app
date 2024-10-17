@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 
 #for getting youtube length
 from pytube import YouTube
+import yt_dlp
 #for bucketing
 import embedding_bucketing.embedding_model_test as em
 #own modules ao_core arch and config
@@ -94,14 +95,15 @@ def get_random_youtube_link():
     return None
 
 def get_title_from_url(url):
-    r = requests.get(url)
-    soup = BeautifulSoup(r.text, "html.parser")
-
-    link = soup.find_all(name="title")[0]
-    title = str(link)
-    title = title.replace("<title>","")
-    title = title.replace("</title>","")
-    return title
+    # Initialize yt-dlp with options
+    ydl_opts = {}
+    
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        # Extract video info
+        video_info = ydl.extract_info(url, download=False)
+        # Get the title from the video info
+        title = video_info.get('title', None)
+        return title
 
 def get_FNF_from_title(title):
     input_message = ("Is this video title fiction or not"+ title)
@@ -244,16 +246,16 @@ with big_left:
                 st.write("Error url not recognised")
             st.session_state.display_video = True
     # Start button logic
-#    if st.button(f"Load {count} links"):
-#        if count > 0:
-#            
-#            for i in range(count):    
-#                data = get_random_youtube_link()
-#                while not data:  # Retry until a valid link is retrieved
-#                    data = get_random_youtube_link()
-#                if data not in st.session_state.videos_in_list:
-#                    st.session_state.videos_in_list.append(data)
-#            st.write(f"Loaded {count} videos.")
+    if st.button(f"Load {count} links"):
+        if count > 0:
+            
+            for i in range(count):    
+                data = get_random_youtube_link()
+                while not data:  # Retry until a valid link is retrieved
+                    data = get_random_youtube_link()
+                if data not in st.session_state.videos_in_list:
+                    st.session_state.videos_in_list.append(data)
+            st.write(f"Loaded {count} videos.")
             st.session_state.display_video = True
     st.write("### Training History:")
     st.write(st.session_state.training_history[0:st.session_state.numberVideos, :])
