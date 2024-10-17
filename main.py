@@ -59,12 +59,14 @@ amount_of_binary_digits = 10
 type_of_distance_calc = "COSINE SIMILARITY"
 start_Genre = ["Drama", "Comedy", "Action", "Romance", "Documentary", "Music", "Gaming", "Entertainment", "News", "Thriller", "Horror", "Science Fiction", "Fantasy", "Adventure", "Mystery", "Animation", "Family", "Historical", "Biography", "Superhero"
 ]
+
 em.config(openai_api_key) # configuring openai client for embedding model
+print("configuring em")
 
 if "cache" not in st.session_state:
     cache_file_name = "genre_embedding_cache.json"
     st.session_state.cache, st.session_state.genre_buckets = em.init(cache_file_name, start_Genre)
-
+    print("init em")
 
 st.set_page_config(page_title="DemoRS", layout="wide")
 
@@ -242,16 +244,16 @@ with big_left:
                 st.write("Error url not recognised")
             st.session_state.display_video = True
     # Start button logic
-    if st.button(f"Load {count} links"):
-        if count > 0:
-            
-            for i in range(count):    
-                data = get_random_youtube_link()
-                while not data:  # Retry until a valid link is retrieved
-                    data = get_random_youtube_link()
-                if data not in st.session_state.videos_in_list:
-                    st.session_state.videos_in_list.append(data)
-            st.write(f"Loaded {count} videos.")
+#    if st.button(f"Load {count} links"):
+#        if count > 0:
+#            
+#            for i in range(count):    
+#                data = get_random_youtube_link()
+#                while not data:  # Retry until a valid link is retrieved
+#                    data = get_random_youtube_link()
+#                if data not in st.session_state.videos_in_list:
+#                    st.session_state.videos_in_list.append(data)
+#            st.write(f"Loaded {count} videos.")
             st.session_state.display_video = True
     st.write("### Training History:")
     st.write(st.session_state.training_history[0:st.session_state.numberVideos, :])
