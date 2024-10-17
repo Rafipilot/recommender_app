@@ -69,7 +69,6 @@ if "cache" not in st.session_state:
     st.session_state.cache, st.session_state.genre_buckets = em.init(cache_file_name, start_Genre)
     print("init em")
 
-st.set_page_config(page_title="DemoRS", layout="wide")
 
 # Predefined list of random search terms
 random_search_terms = ['funny', 'gaming', 'science', 'technology', 'news', 'random', 'adventure', "programming", "computer science"]
@@ -186,20 +185,20 @@ def next_video():  # function return closest genre and binary encoding of next v
     length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary = get_video_data_from_url(st.session_state.videos_in_list[0])
    
     mood_binary, mood = Get_mood_binary()
-    st.write("Genre: ", closest_genre)
-    st.write("Length: ", length)
-    st.write("Fiction/Non-fiction: ", fnf)
-    st.write("User's Mood: ", mood)
-    st.write("")
+    st.markdown("     Genre: "+str(closest_genre), help="Extracted by an LLM")
+    st.markdown("     Length: "+str(length), help="Extracted by an LLM")
+    st.markdown("     Fiction/Non-fiction: "+str(fnf), help="Extracted by an LLM")
+    st.markdown("     User's Mood: "+str(mood),  help="Inputted by user")
+    st.markdown("")
     binary_input_to_agent = genre_binary_encoding+ length_binary + fnf_binary +mood_binary
    # st.write("binary input:", binary_input_to_agent)++
     st.session_state.current_binary_input = binary_input_to_agent # storing the current binary input to reduce redundant calls
     st.session_state.recommendation_result = agent_response(binary_input_to_agent)
     percentage_response = sort_agent_response(st.session_state.recommendation_result) 
-    recommended = ("Chance recommended to you: "+ str(percentage_response) +"%")
+    recommended = (str(percentage_response) +"%")
     title = get_title_from_url(st.session_state.videos_in_list[0])
     temp_history = [title, recommended, closest_genre, length, fnf, mood]
-    st.write("Recommendation result: ", recommended)
+    st.write("**Agent's Recommendation:**  ", recommended)
     st.session_state.training_history[st.session_state.numberVideos, :] = temp_history
     st.video(st.session_state.videos_in_list[0])
     st.session_state.numberVideos += 1
@@ -229,18 +228,30 @@ def agent_response(binary_input): # function to get agent response on next video
     return response
 
 
+st.set_page_config(
+    page_title="Recommender Demo by AO Labs",
+    page_icon="misc/ao_favicon.png",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        "Get Help": "https://discord.gg/Zg9bHPYss5",
+        "Report a bug": "mailto:eng@aolabs.ai",
+        "About": "AO Labs builds next-gen AI models that learn after training; learn more at docs.aolabs.ai/docs/mnist-benchmark",
+    },
+)
 
 # Title of the app
-st.title("Recommender")
+st.title("LLM + *Weightless* NNs Continuously Learning Recommender")
+st.write("### *a demo by [aolabs.ai](https://www.aolabs.ai/)*")
 
-big_left, big_right = st.columns(2)
+big_left, big_right = st.columns([0.3, 0.7], gap="large")
 
 with big_left:
-    st.session_state.mood = st.selectbox("Set your mood (as the user)", ("Random", "Funny", "Serious"))
+    st.session_state.mood = st.selectbox("Set your mood (as the user):", ("Random", "Funny", "Serious"))
+    url = st.text_input("Enter link to a YouTube video: ", value=None, placeholder="Optional")
     # Input for the number of links
 #    count = st.text_input("How many links to load", value='0')
 #    count = int(count) 
-    url = st.text_input("Enter a youtube video to test", value=None)
     if url !=None:
         if st.button("Add Link"):
             try:
@@ -250,7 +261,7 @@ with big_left:
                 else:
                     st.write("Unable to add link as it is already entered")
             except Exception as e:
-                st.write("Error url not recognised")
+                st.write("Error: URL not recognised; please try another")
             st.session_state.display_video = True
     # Start button logic
 #    if st.button(f"Load {count} links"):
@@ -274,32 +285,32 @@ with big_left:
         if data not in st.session_state.videos_in_list:
             st.session_state.videos_in_list.append(data)
 
-    st.write("### Training History:")
-    st.write(st.session_state.training_history[0:st.session_state.numberVideos, :])
+
 with big_right:
     small_right, small_left = st.columns(2)
-    with small_right:
-        if st.button("RECOMMEND MORE"):#
-            train_agent(user_response="RECOMMEND MORE") # Train agent positively as user like recommendation
-            if len(st.session_state.videos_in_list) > 1:
-                st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
-                st.session_state.display_video = True
-            else:
-                st.write("The list is empty, cannot pop any more items.")
-                st.session_state.display_video = False  #Stop displaying the video once we have run out of videos
+    if small_right.button(":green[RECOMMEND MORE]", type="primary", icon=":material/thumb_up:"):#
+        train_agent(user_response="RECOMMEND MORE") # Train agent positively as user like recommendation
+        if len(st.session_state.videos_in_list) > 1:
+            st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
+            st.session_state.display_video = True
+        else:
+            st.write("The list is empty, cannot pop any more items.")
+            st.session_state.display_video = False  #Stop displaying the video once we have run out of videos
 
-    with small_left:
-        if st.button("STOP RECOMMENDING"):
-            train_agent(user_response="STOP RECOMMENDING") # train agent negatively as user dilike recommendation
-            if len(st.session_state.videos_in_list) > 1:
-                st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
-                st.session_state.display_video = True
-            else:
-                st.write("The list is empty, cannot pop any more items.")
-                st.session_state.display_video = False  #Stop displaying the video once we have run out of videos
+    if small_left.button(":red[STOP RECOMMENDING]", icon=":material/thumb_down:"):
+        train_agent(user_response="STOP RECOMMENDING") # train agent negatively as user dilike recommendation
+        if len(st.session_state.videos_in_list) > 1:
+            st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
+            st.session_state.display_video = True
+        else:
+            st.write("The list is empty, cannot pop any more items.")
+            st.session_state.display_video = False  #Stop displaying the video once we have run out of videos
 
     
     if st.session_state.display_video == True:
         genre, genre_binary_encoding = next_video()
     else:
         st.write("No more videos in the list.")
+
+with st.expander("### View Agent's Training History"):
+    st.write(st.session_state.training_history[0:st.session_state.numberVideos, :])
