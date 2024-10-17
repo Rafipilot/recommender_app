@@ -31,7 +31,8 @@ if "training_history" not in st.session_state:
 if "mood" not in st.session_state:
     st.session_state.mood = "Random"
 
-display_video = False
+if "display_video" not in st.session_state:
+    st.session_state.display_video = False
 
 #init agent
 if "agent" not in st.session_state:
@@ -170,7 +171,7 @@ def sort_agent_response(agent_response):
     percentage = (count / len(agent_response)) * 100 
     return percentage
 def next_video():  # function return closest genre and binary encoding of next video and displays it 
-    display_video = False
+    #display_video = False
     length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary = get_video_data_from_url(st.session_state.videos_in_list[0])
    
     mood_binary, mood = Get_mood_binary()
@@ -239,7 +240,7 @@ with big_left:
                     st.write("Unable to add link as it is already entered")
             except Exception as e:
                 st.write("Error url not recognised")
-            display_video = True
+            st.session_state.display_video = True
     # Start button logic
     if st.button(f"Load {count} links"):
         if count > 0:
@@ -251,7 +252,7 @@ with big_left:
                 if data not in st.session_state.videos_in_list:
                     st.session_state.videos_in_list.append(data)
             st.write(f"Loaded {count} videos.")
-            display_video = True
+            st.session_state.display_video = True
     st.write("### Training History:")
     st.write(st.session_state.training_history[0:st.session_state.numberVideos, :])
 with big_right:
@@ -261,7 +262,7 @@ with big_right:
             train_agent(user_response="RECOMMEND MORE") # Train agent positively as user like recommendation
             if len(st.session_state.videos_in_list) > 1:
                 st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
-                display_video = True
+                st.session_state.display_video = True
             else:
                 st.write("The list is empty, cannot pop any more items.")
 
@@ -270,13 +271,13 @@ with big_right:
             train_agent(user_response="STOP RECOMMENDING") # train agent negatively as user dilike recommendation
             if len(st.session_state.videos_in_list) > 1:
                 st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
-                display_video = True
+                st.session_state.display_video = True
             else:
                 st.write("The list is empty, cannot pop any more items.")
 
 
     
-    if display_video == True:
+    if st.session_state.display_video == True:
         genre, genre_binary_encoding = next_video()
     else:
         st.write("No more videos in the list.")
