@@ -31,7 +31,8 @@ if "training_history" not in st.session_state:
     st.session_state.numberVideos = 0
 if "mood" not in st.session_state:
     st.session_state.mood = "Random"
-
+if "natural_language_input" not in st.session_state:
+    st.session_state.natural_language_input = []
 if "display_video" not in st.session_state:
     st.session_state.display_video = False
 
@@ -186,7 +187,7 @@ def next_video():  # function return closest genre and binary encoding of next v
    
     mood_binary, mood = Get_mood_binary()
     st.markdown("     Genre: "+str(closest_genre), help="Extracted by an LLM")
-    st.markdown("     Length: "+str(length), help="Extracted by an LLM")
+    st.markdown("     Length: "+str(length), help="Extracted via pytube")
     st.markdown("     Fiction/Non-fiction: "+str(fnf), help="Extracted by an LLM")
     st.markdown("     User's Mood: "+str(mood),  help="Inputted by user")
     st.markdown("")
@@ -197,9 +198,9 @@ def next_video():  # function return closest genre and binary encoding of next v
     percentage_response = sort_agent_response(st.session_state.recommendation_result) 
     recommended = (str(percentage_response) +"%")
     title = get_title_from_url(st.session_state.videos_in_list[0])
-    temp_history = [title, recommended, closest_genre, length, fnf, mood]
+    st.session_state.natural_language_input = [title, recommended, closest_genre, length, fnf, mood]
+    st.session_state.training_history[st.session_state.numberVideos, :] = st.session_state.natural_language_input
     st.write("**Agent's Recommendation:**  ", recommended)
-    st.session_state.training_history[st.session_state.numberVideos, :] = temp_history
     st.video(st.session_state.videos_in_list[0])
     st.session_state.numberVideos += 1
     return closest_genre, genre_binary_encoding
