@@ -95,15 +95,20 @@ def get_random_youtube_link():
     return None
 
 def get_title_from_url(url):
-    # Initialize yt-dlp with options
-    ydl_opts = {}
-    
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        # Extract video info
-        video_info = ydl.extract_info(url, download=False)
-        # Get the title from the video info
-        title = video_info.get('title', None)
+    response = requests.get(url) # sending a request to the yt url
+
+    if response.status_code != 200:
+        return ("Failed to get title error code: ", response.status_code)
+
+    soup  = BeautifulSoup(response.text, "html.parser")
+  
+    title_tag = soup.find('title')
+
+    if title_tag:
+        title = title_tag.text.replace(" - YouTube", "").strip()
         return title
+    else:
+        return "Error in getting title"
 
 def get_FNF_from_title(title):
     input_message = ("Is this video title fiction or not"+ title)
