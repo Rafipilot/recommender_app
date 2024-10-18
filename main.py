@@ -19,7 +19,7 @@ import embedding_bucketing.embedding_model_test as em
 #own modules ao_core arch and config
 from config import openai_api_key
 import ao_core as ao
-from arch_recommender import arch
+from arch__Recommender import arch
 
 # Initialize global variables
 if "videos_in_list" not in st.session_state:
