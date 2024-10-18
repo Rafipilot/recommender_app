@@ -31,8 +31,6 @@ if "training_history" not in st.session_state:
     st.session_state.numberVideos = 0
 if "mood" not in st.session_state:
     st.session_state.mood = "Random"
-if "natural_language_input" not in st.session_state:
-    st.session_state.natural_language_input = []
 if "display_video" not in st.session_state:
     st.session_state.display_video = False
 
@@ -198,11 +196,12 @@ def next_video():  # function return closest genre and binary encoding of next v
     percentage_response = sort_agent_response(st.session_state.recommendation_result) 
     recommended = (str(percentage_response) +"%")
     title = get_title_from_url(st.session_state.videos_in_list[0])
-    st.session_state.natural_language_input = [title, recommended, closest_genre, length, fnf, mood]
-    st.session_state.training_history[st.session_state.numberVideos, :] = st.session_state.natural_language_input
+    temp_history = [title, recommended, closest_genre, length, fnf, mood]
+    print("temp history: ", temp_history)
+    st.session_state.training_history[st.session_state.numberVideos, :] = temp_history
+    
     st.write("**Agent's Recommendation:**  ", recommended)
     st.video(st.session_state.videos_in_list[0])
-    st.session_state.numberVideos += 1
     return closest_genre, genre_binary_encoding
 
 def train_agent(user_response):
@@ -264,19 +263,8 @@ with big_left:
             except Exception as e:
                 st.write("Error: URL not recognised; please try another")
             st.session_state.display_video = True
+    
     # Start button logic
-#    if st.button(f"Load {count} links"):
-#        if count > 0:
-#            
-#            for i in range(count):    
-#                data = get_random_youtube_link()
-#                while not data:  # Retry until a valid link is retrieved
-#                    data = get_random_youtube_link()
-#                if data not in st.session_state.videos_in_list:
-#                   st.session_state.videos_in_list.append(data)
-#            st.write(f"Loaded {count} videos.")
-#            st.session_state.display_video = True
-
     if st.button("Start"):
         st.session_state.display_video = True
 
@@ -290,6 +278,7 @@ with big_left:
 with big_right:
     small_right, small_left = st.columns(2)
     if small_right.button(":green[RECOMMEND MORE]", type="primary", icon=":material/thumb_up:"):#
+        
         train_agent(user_response="RECOMMEND MORE") # Train agent positively as user like recommendation
         if len(st.session_state.videos_in_list) > 1:
             st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
@@ -297,7 +286,7 @@ with big_right:
         else:
             st.write("The list is empty, cannot pop any more items.")
             st.session_state.display_video = False  #Stop displaying the video once we have run out of videos
-
+        st.session_state.numberVideos += 1
     if small_left.button(":red[STOP RECOMMENDING]", icon=":material/thumb_down:"):
         train_agent(user_response="STOP RECOMMENDING") # train agent negatively as user dilike recommendation
         if len(st.session_state.videos_in_list) > 1:
@@ -306,8 +295,8 @@ with big_right:
         else:
             st.write("The list is empty, cannot pop any more items.")
             st.session_state.display_video = False  #Stop displaying the video once we have run out of videos
+        st.session_state.numberVideos += 1
 
-    
     if st.session_state.display_video == True:
         genre, genre_binary_encoding = next_video()
     else:
