@@ -244,7 +244,7 @@ st.set_page_config(
 )
 
 # Title of the app
-st.title("LLM + Weightless NNs - a Continuously Learning Personal YouTube Recommender")
+st.title("LLM + WNNs - a Real-Time Personal YouTube Recommender")
 st.write("### *a preview by [aolabs.ai](https://www.aolabs.ai/)*")
 
 big_left, big_right = st.columns([0.3, 0.7], gap="large")
