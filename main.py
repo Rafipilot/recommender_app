@@ -5,9 +5,11 @@ import scrapetube
 import random
 #to convert numpy array to list
 import numpy as np
+import pandas as pd
 ## for getting title
 import requests
 from bs4 import BeautifulSoup
+import streamlit_analytics2
 
 #for getting youtube length
 from pytube import YouTube
@@ -27,7 +29,7 @@ if "recommendation_result" not in st.session_state:
 if "current_binary_input" not in st.session_state:
     st.session_state.current_binary_input = []
 if "training_history" not in st.session_state:
-    st.session_state.training_history = (np.zeros([100,6], dtype="O"))
+    st.session_state.training_history = (np.zeros([100,7], dtype="O"))
     st.session_state.numberVideos = 0
 if "mood" not in st.session_state:
     st.session_state.mood = "Random"
@@ -172,6 +174,7 @@ def sort_agent_response(agent_response):
             count += 1
     percentage = (count / len(agent_response)) * 100 
     return percentage
+
 def next_video():  # function return closest genre and binary encoding of next video and displays it 
     #display_video = False
     data = get_random_youtube_link()
@@ -179,13 +182,14 @@ def next_video():  # function return closest genre and binary encoding of next v
         data = get_random_youtube_link()
     if data not in st.session_state.videos_in_list:
         st.session_state.videos_in_list.append(data)
+    st.session_state.display_video = True
 
 
     length, length_binary, closest_genre, genre_binary_encoding, fnf, fnf_binary = get_video_data_from_url(st.session_state.videos_in_list[0])
    
     mood_binary, mood = Get_mood_binary()
     st.markdown("     Genre: "+str(closest_genre), help="Extracted by an LLM")
-    st.markdown("     Length: "+str(length), help="Extracted via pytube")
+    st.markdown("     Length: "+str(length), help="in minutes; extracted via pytube")
     st.markdown("     Fiction/Non-fiction: "+str(fnf), help="Extracted by an LLM")
     st.markdown("     User's Mood: "+str(mood),  help="Inputted by user")
     st.markdown("")
@@ -196,10 +200,9 @@ def next_video():  # function return closest genre and binary encoding of next v
     percentage_response = sort_agent_response(st.session_state.recommendation_result) 
     recommended = (str(percentage_response) +"%")
     title = get_title_from_url(st.session_state.videos_in_list[0])
-    temp_history = [title, recommended, closest_genre, length, fnf, mood]
+    temp_history = [title, closest_genre, length, fnf, mood, recommended, "User's Training"]
     print("temp history: ", temp_history)
     st.session_state.training_history[st.session_state.numberVideos, :] = temp_history
-    
     st.write("**Agent's Recommendation:**  ", recommended)
     st.video(st.session_state.videos_in_list[0])
     return closest_genre, genre_binary_encoding
@@ -227,7 +230,7 @@ def agent_response(binary_input): # function to get agent response on next video
     response = st.session_state.agent.story[st.session_state.agent.state-1, st.session_state.agent.arch.Z__flat]
     return response
 
-
+streamlit_analytics2.start_tracking()
 st.set_page_config(
     page_title="Recommender Demo by AO Labs",
     page_icon="misc/ao_favicon.png",
@@ -241,14 +244,15 @@ st.set_page_config(
 )
 
 # Title of the app
-st.title("LLM + *Weightless* NNs Continuously Learning Recommender")
-st.write("### *a demo by [aolabs.ai](https://www.aolabs.ai/)*")
+st.title("LLM + Weightless NNs - a Continuously Learning Personal YouTube Recommender")
+st.write("### *a preview by [aolabs.ai](https://www.aolabs.ai/)*")
 
 big_left, big_right = st.columns([0.3, 0.7], gap="large")
 
 with big_left:
     st.session_state.mood = st.selectbox("Set your mood (as the user):", ("Random", "Funny", "Serious"))
-    url = st.text_input("Enter link to a YouTube video: ", value=None, placeholder="Optional")
+    st.divider()
+    url = st.text_input("Enter link to a YouTube video: ", value=None, placeholder="Optional", help="This app automatically loads YouTube videos, and you can also add a specific YouTube link here.")
     # Input for the number of links
 #    count = st.text_input("How many links to load", value='0')
 #    count = int(count) 
@@ -259,48 +263,62 @@ with big_left:
                     st.session_state.videos_in_list.insert(0, url)
                     print(st.session_state.videos_in_list)
                 else:
-                    st.write("Unable to add link as it is already entered")
+                    st.write("Unable to add link as it has already been used; please try another")
             except Exception as e:
                 st.write("Error: URL not recognised; please try another")
             st.session_state.display_video = True
+
     
-    # Start button logic
-    if st.button("Start"):
-        st.session_state.display_video = True
+    # Start button logic (removed the button)
 
+    data = get_random_youtube_link()
+    while not data:  # Retry until a valid link is retrieved
         data = get_random_youtube_link()
-        while not data:  # Retry until a valid link is retrieved
-            data = get_random_youtube_link()
-        if data not in st.session_state.videos_in_list:
-            st.session_state.videos_in_list.append(data)
+    if data not in st.session_state.videos_in_list:
+        st.session_state.videos_in_list.append(data)
 
+    st.divider()
+    with st.expander("### Agent's Training History"):
+        history_titles = ["Title", "Closest Genre", "Duration", "Type", "User's Mood", "Agent's Recommendation", "User's Training" ]
+        df = pd.DataFrame(
+            st.session_state.training_history[0:st.session_state.numberVideos, :], columns=history_titles
+            )
+        st.dataframe(df)
 
 with big_right:
     small_right, small_left = st.columns(2)
     if small_right.button(":green[RECOMMEND MORE]", type="primary", icon=":material/thumb_up:"):#
-        
         train_agent(user_response="RECOMMEND MORE") # Train agent positively as user like recommendation
         if len(st.session_state.videos_in_list) > 1:
             st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
             st.session_state.display_video = True
-        else:
-            st.write("The list is empty, cannot pop any more items.")
-            st.session_state.display_video = False  #Stop displaying the video once we have run out of videos
+            st.session_state.training_history[st.session_state.numberVideos, -1] = "User Liked"
+        # else:
+        #     st.write("The list is empty, cannot pop any more items.")
+        #     st.session_state.display_video = False  #Stop displaying the video once we have run out of videos
         st.session_state.numberVideos += 1
     if small_left.button(":red[STOP RECOMMENDING]", icon=":material/thumb_down:"):
-        train_agent(user_response="STOP RECOMMENDING") # train agent negatively as user dilike recommendation
+        train_agent(user_response="STOP RECOMMENDING") # train agent negatively as user dislike recommendation
         if len(st.session_state.videos_in_list) > 1:
             st.session_state.videos_in_list.pop(0)  # Remove the first video from the list
             st.session_state.display_video = True
-        else:
-            st.write("The list is empty, cannot pop any more items.")
-            st.session_state.display_video = False  #Stop displaying the video once we have run out of videos
+            st.session_state.training_history[st.session_state.numberVideos, -1] = "User Disliked"
+        # else:
+        #     st.write("The list is empty, cannot pop any more items.")
+        #     st.session_state.display_video = False  #Stop displaying the video once we have run out of videos
         st.session_state.numberVideos += 1
+        
+    # if st.session_state.display_video == True:
+    genre, genre_binary_encoding = next_video()
 
-    if st.session_state.display_video == True:
-        genre, genre_binary_encoding = next_video()
-    else:
-        st.write("No more videos in the list.")
+st.write("---")
+footer_md = """
+    [View & fork the code behind this application here.](https://github.com/aolabsai/Recommender) \n
+    To learn more about Weightless Neural Networks and the new generation of AI we're developing at AO Labs, [visit our docs.aolabs.ai.](https://docs.aolabs.ai/docs/mnist-benchmark)\n
+    \n
+    We eagerly welcome contributors and hackers at all levels! [Say hi on our discord.](https://discord.gg/Zg9bHPYss5)
+    """
+st.markdown(footer_md)
+st.image("misc/aolabs-logo-horizontal-full-color-white-text.png", width=300)
 
-with st.expander("### View Agent's Training History"):
-    st.write(st.session_state.training_history[0:st.session_state.numberVideos, :])
+streamlit_analytics2.stop_tracking()

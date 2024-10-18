@@ -1,10 +1,12 @@
 beautifulsoup4==4.12.3
 numpy==1.26.4
+pandas
 pytube==15.0.0
 Requests==2.32.3
 scrapetube==2.5.1
 streamlit
 yt_dlp
+streamlit_analytics2
 
 git+https://github.com/Rafipilot/embedding_bucketing
 # git+https://github.com/aolabsai/ao_core
