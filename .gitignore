@@ -1,4 +1,4 @@
 config.py
-__pycache__/
+__pycache__
 .env
 genre_embedding_cache.json
